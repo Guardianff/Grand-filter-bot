@@ -51,8 +51,8 @@ async def start(client, message):
             parse_mode=enums.ParseMode.HTML
         )
         return
-       invite_links = await is_subscribed(client, query=message)
-       if AUTH_CHANNEL and len(invite_links) >= 1:
+    invite_links = await is_subscribed(client, query=message)
+    if AUTH_CHANNEL and len(invite_links) >= 1:
         #this is written by tg: @programcrasher
         btn = []
         for chnl_num, link in enumerate(invite_links, start=1):
