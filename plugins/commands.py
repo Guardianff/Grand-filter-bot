@@ -52,7 +52,7 @@ async def start(client, message):
         )
         return
        invite_links = await is_subscribed(client, query=message)
-    if AUTH_CHANNEL and len(invite_links) >= 1:
+       if AUTH_CHANNEL and len(invite_links) >= 1:
         #this is written by tg: @programcrasher
         btn = []
         for chnl_num, link in enumerate(invite_links, start=1):
