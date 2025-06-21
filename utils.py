@@ -44,16 +44,34 @@ class temp(object):
 
 async def is_subscribed(bot, query=None, userid=None):
     invite_links = []
+    
     for id in AUTH_CHANNEL:
         try:
-            if userid == None and query != None:
-                chat = await bot.get_chat(id)
-                user = await bot.get_chat_member(id, query.from_user.id)
+            if userid is None and query is not None:
+                # Get chat info with flood wait handling
+                try:
+                    chat = await bot.get_chat(id)
+                    user = await bot.get_chat_member(id, query.from_user.id)
+                except FloodWait as e:
+                    await asyncio.sleep(e.value)  # Wait for the required time
+                    chat = await bot.get_chat(id)
+                    user = await bot.get_chat_member(id, query.from_user.id)
             else:
-                chat = await bot.get_chat(id)
-                user = await bot.get_chat_member(AUTH_CHANNEL, int(userid))
+                # Get chat info with flood wait handling
+                try:
+                    chat = await bot.get_chat(id)
+                    user = await bot.get_chat_member(id, int(userid))
+                except FloodWait as e:
+                    await asyncio.sleep(e.value)  # Wait for the required time
+                    chat = await bot.get_chat(id)
+                    user = await bot.get_chat_member(id, int(userid))
+                    
         except UserNotParticipant:
             invite_links.append(chat.invite_link)
+        except FloodWait as e:
+            # If we still get FloodWait after retry, wait and continue
+            await asyncio.sleep(e.value)
+            continue
         except Exception as e:
             logger.exception(e)
             continue
@@ -61,8 +79,10 @@ async def is_subscribed(bot, query=None, userid=None):
             if user.status != enums.ChatMemberStatus.BANNED:
                 continue
 
+        # Add a small delay between iterations to prevent flooding
+        await asyncio.sleep(1)
+    
     return invite_links
-
 async def get_poster(query, bulk=False, id=False, file=None):
     if not id:
         query = (query.strip()).lower()
